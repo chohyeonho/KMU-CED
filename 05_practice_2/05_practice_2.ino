@@ -8,7 +8,7 @@ void setup()
   {
     ;
   }
-  toggle=0;
+  toggle=1;
   digitalWrite(PIN_LED,toggle);
   delay(1000);
 }

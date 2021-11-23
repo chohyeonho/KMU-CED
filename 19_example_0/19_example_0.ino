@@ -17,11 +17,8 @@ void setup() {
 
   a = 75; //70;
   b = 240; //300;
-  myservo.write(90);
-  while(1)
-  {
-    
-  }
+  //myservo.write(1373);
+  //while(1){}
 }
 
 float ir_distance(void){ // return value unit: mm
@@ -42,11 +39,11 @@ void loop() {
   else digitalWrite(PIN_LED, 255);
   if(dist_cali>285)
   {
-    myservo.write(70);
+    myservo.writeMicroseconds(1270);
   }
   else
   {
-    myservo.write(90);
+    myservo.write(1476);
   }
   delay(20);
 }

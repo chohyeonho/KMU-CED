@@ -10,13 +10,13 @@ void setup() {
 
 void loop() {
   if(millis() < last_sampling_time + INTERVAL) return;
-  if(millis()/5%360<180)
+  if(millis()/50%360<180)
   {
-    myservo.write(millis()/5%180);
+    myservo.write(millis()/50%180);
   }
   else
   {
-    myservo.write(180-millis()/5%180);
+    myservo.write(180-millis()/50%180);
   }
   last_sampling_time += INTERVAL;
 }

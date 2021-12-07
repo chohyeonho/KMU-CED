@@ -32,7 +32,7 @@
 #define _INTERVAL_SERIAL 100  // [20213099] 시리얼 표시 주기 설정
 
 // PID parameters
-#define _KP 0.85      //[20191979] 비례제어 값
+#define _KP 0.9      //[20191979] 비례제어 값
 
 //////////////////////
 // global variables //

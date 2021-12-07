@@ -15,7 +15,7 @@
 #define _DIST_MAX 410         //[20191979] 최대거리
 
 // Distance sensor
-#define _DIST_ALPHA 0.5 //[20203118] DIST_ALPHA 값 설정
+#define _DIST_ALPHA 0.1 //[20203118] DIST_ALPHA 값 설정
 
 // Servo range
 #define _DUTY_MIN 1160    // [20213083]서보 각도의 최솟값 설정
@@ -32,7 +32,8 @@
 #define _INTERVAL_SERIAL 100  // [20213099] 시리얼 표시 주기 설정
 
 // PID parameters
-#define _KP 0.8      //[20191979] 비례제어 값
+#define _KP 1        //[20191979] 비례제어 값
+#define _KD 60        // 미분제어 값
 
 //////////////////////
 // global variables //
@@ -70,6 +71,8 @@ void setup() {
 
 // initialize global variables
 duty_curr=_DUTY_MIN; //[20203118] duty_curr 값 초기화
+dist_raw = dist_ema = ir_distance_filtered(); // 초기화
+error_curr = error_prev = dist_target - dist_ema;  // 초기화
 dist_target=_DIST_TARGET; //[20203118] dist_target 값 초기화
 
 last_sampling_time_dist = last_sampling_time_servo = last_sampling_time_serial = 0;
@@ -113,11 +116,13 @@ if(time_curr >= last_sampling_time_serial + _INTERVAL_SERIAL){
       event_dist = false;
   // get a distance reading from the distance sensor
       dist_raw = ir_distance_filtered();
+      dist_ema = (1 - _DIST_ALPHA)*dist_ema + _DIST_ALPHA*dist_raw; // [20213083]
 
   // PID control logic
-    error_curr = dist_target - dist_raw;
-    pterm = error_curr; //[20213083]
-    control =_KP*pterm; //[20203118]  
+    error_curr = dist_target - dist_ema;
+    pterm = _KP * error_curr; //[20213083]
+    dterm = _KD * (error_curr - error_prev);//[20191979]
+    control = pterm + dterm; //[20203118]  
 
   // duty_target = f(duty_neutral, control)
     duty_target = _DUTY_NEU + control; //[20213086]
@@ -126,6 +131,8 @@ if(time_curr >= last_sampling_time_serial + _INTERVAL_SERIAL){
 if(duty_target > _DUTY_MAX){duty_target = _DUTY_MAX;}
 if(duty_target < _DUTY_MIN){duty_target = _DUTY_MIN;}
 //[20213086]
+
+error_prev = error_curr;
   }
   
   if(event_servo) {
@@ -148,9 +155,11 @@ myservo.writeMicroseconds(duty_curr); //[20213086]
   if(event_serial) {
     event_serial = false; //[20203118]
     Serial.print("dist_ir:");
-    Serial.print(dist_raw);
+    Serial.print(dist_ema);
     Serial.print(",pterm:");
     Serial.print(map(pterm,-1000,1000,510,610));
+    Serial.print(",dterm:");
+    Serial.print(map(dterm,-1000,1000,510,610));
     Serial.print(",duty_target:");
     Serial.print(map(duty_target,1000,2000,410,510));
     Serial.print(",duty_curr:");
